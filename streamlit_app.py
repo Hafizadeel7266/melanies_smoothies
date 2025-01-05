@@ -23,29 +23,29 @@ pd_df = my_dataframe.to_pandas()
 
 ingredients_list = st.multiselect(
     "Choose up to 5 ingredients:",
-    pd_df['FRUIT_NAME'].tolist(),
+    my_dataframe.collect(),
     max_selections=5
 )
-
 if ingredients_list:
     st.write(ingredients_list)
-    ingredients_string = ' '.join(ingredients_list)
-
+    st.text(ingredients_list)
+    ingredients_string = ''
+    
     for fruit in ingredients_list:
-        search_on = pd_df.loc[pd_df['FRUIT_NAME'] == fruit, 'SEARCH_ON'].iloc[0]
+        ingredients_string += fruit + ' '
         
-        if search_on:  # Check if search_on is not None
-            st.subheader(fruit + ' Nutrition Information')
-            smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + search_on)
-            if smoothiefroot_response.status_code == 200:
-                st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
-            else:
-                st.write(f"Could not retrieve information for {fruit}.")
-        else:
-            st.write(f"No nutrition information available for {fruit}.")
+        # Get the search_on value and ensure it is not None
+        search_on = pd_df.loc[pd_df['FRUIT_NAME'] == fruit, 'SEARCH_ON'].iloc[0]
+        if search_on is None:
+            st.warning(f"No search data available for {fruit}.")
+            continue
+        
+        st.subheader(fruit + ' Nutrition Information')
+        smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{search_on}")
+        sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
 
-    my_insert_stmt = f"""INSERT INTO smoothies.public.orders(ingredients, name_on_order)
-                         VALUES ('{ingredients_string}', '{title}')"""
+    my_insert_stmt = """INSERT INTO smoothies.public.orders(ingredients, name_on_order)
+                        VALUES ('""" + ingredients_string.strip() + """','""" + title + """')"""
 
     st.write(my_insert_stmt)
     time_to_insert = st.button('Submit Order')
