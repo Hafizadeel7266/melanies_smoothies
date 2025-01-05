@@ -2,6 +2,10 @@ import streamlit as st
 from snowflake.snowpark.context import get_active_session
 from snowflake.snowpark.functions import col
 
+# Establish Snowflake connection
+cnx = st.connection("snowflake")
+session = cnx.session()
+
 # Write directly to the app
 st.title(":cup_with_straw: Customize Your Smoothie! :cup_with_straw:")
 st.write(
@@ -14,9 +18,6 @@ st.write(
 name_on_order = st.text_input("Name On The Smoothie")
 st.write("The Name On Your Smoothie will be:", name_on_order)
 
-# Get the active Snowflake session
-session = get_active_session()
-
 # Select the FRUIT_NAME column from the specified table
 my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
 
@@ -24,7 +25,7 @@ my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT
 st.dataframe(data=my_dataframe, use_container_width=True)
 
 # Multi-select for ingredients
-ingredients_list = st.multiselect("Choose up to 5 ingredients:", my_dataframe.collect(),max_selections =5)
+ingredients_list = st.multiselect("Choose up to 5 ingredients:", my_dataframe.collect(), max_selections=5)
 
 # Display and process selected ingredients if any are chosen
 if ingredients_list:
