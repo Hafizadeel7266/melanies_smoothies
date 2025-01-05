@@ -1,5 +1,5 @@
 import streamlit as st
-#from snowflake.snowpark.context import get_active_session
+from snowflake.snowpark.context import get_active_session
 from snowflake.snowpark.functions import col
 
 # Write directly to the app
@@ -15,7 +15,7 @@ name_on_order = st.text_input("Name On The Smoothie")
 st.write("The Name On Your Smoothie will be:", name_on_order)
 
 # Get the active Snowflake session
-#session = get_active_session()
+session = get_active_session()
 
 # Select the FRUIT_NAME column from the specified table
 my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
